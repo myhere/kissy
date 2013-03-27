@@ -16,6 +16,11 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
         DISPLAY = 'display', DEFAULT = 'default', NONE = 'none',
         SCROLL = 'scroll', RESIZE = 'resize',
 
+        webpSupportMeta = {
+          detected: false,
+          supported: false
+        },
+
         defaultConfig = {
 
             /**
@@ -41,7 +46,28 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
             /**
              * 是否执行 textarea 里面的脚本
              */
-            execScript: true
+            execScript: true,
+
+            /**
+             * 是否检测 webp 支持, 支持
+             */
+            webp_detect: false,
+
+            /**
+             * webp_detect = true 才执行该函数
+             * 过滤哪些 url 可以使用 webp 格式
+             */
+            webp_filter: function(dataSrc, img) {
+                var ret = '';
+                // 淘宝 cdn
+                if (dataSrc.indexOf('taobaocdn.com') !== -1) {
+                    ret = dataSrc + '_.webp';
+                } else {
+                    ret = dataSrc;
+                }
+
+                return ret;
+            }
         };
 
     /**
@@ -117,6 +143,7 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
             var self = this;
             self.threshold = self._getThreshold();
 
+            self.isWebpSupported();
             self._filterItems();
             self._initLoadEvent();
         },
@@ -267,10 +294,17 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
          */
         _loadImgSrc: function(img, flag) {
             flag = flag || IMG_SRC_DATA;
-            var dataSrc = img.getAttribute(flag);
+            var self = this,
+                dataSrc = img.getAttribute(flag),
+                newSrc;
 
             if (dataSrc && img.src != dataSrc) {
-                img.src = dataSrc;
+                if (self.config.supported) {
+                    newSrc = self.config.webp_filter(dataSrc, img);
+                } else {
+                  newSrc = dataSrc;
+                }
+                img.src = newSrc;
                 img.removeAttribute(flag);
             }
         },
@@ -422,11 +456,33 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
                         }
                 }
             });
+        },
+
+        /**
+         * 判断浏览器是否支持 webp 格式图片
+         * @static
+         */
+        isWebpSupported: function() {
+            if (webpSupportMeta.detected) {
+                return webpSupportMeta.supported;
+            } else {
+                var imgElem,
+                    webp_src = "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAAAQAgCdASoEAAQAAAcIhYWIhYSIgIIADA1gAAUAAAEAAAEAAP7%2F2fIAAAAA";
+
+                imgElem = DOM.create('<img>');
+                Event.on(imgElem, 'load', function() {
+                    // the images should have these dimensions
+                    if(this.width === 4) {
+                        webpSupportMeta.supported = true;
+                    }
+                })
+                DOM.attr(imgElem, "src", webp_src);
+            }
         }
     });
 
     // attach static methods
-    S.mix(DataLazyload, DataLazyload.prototype, true, ['loadCustomLazyData', '_loadImgSrc', '_loadAreaData']);
+    S.mix(DataLazyload, DataLazyload.prototype, true, ['loadCustomLazyData', '_loadImgSrc', '_loadAreaData', 'isWebpSupported']);
 
     return DataLazyload;
 
