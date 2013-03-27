@@ -143,7 +143,6 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
             var self = this;
             self.threshold = self._getThreshold();
 
-            self.isWebpSupported();
             self._filterItems();
             self._initLoadEvent();
         },
@@ -238,17 +237,30 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
                     return;
                 }
                 timer = S.later(function() {
-                    loadItems();
-                    timer = null;
+                    loadItems(function() {
+                        timer = null;
+                    });
                 }, DELAY); // 0.1s 内，用户感觉流畅
             }
 
             // 加载延迟项
-            function loadItems() {
-                self._loadItems();
-                if (self._getItemsLength() === 0) {
-                    Event.remove(win, SCROLL, loader);
-                    Event.remove(win, RESIZE, resizeHandler);
+            function loadItems(callback) {
+                if (self.config.webp_detect) {
+                    self.checkWebpSupport(function() {
+                        _loadItems();
+                    });
+                } else {
+                    _loadItems();
+                }
+
+
+                function _loadItems() {
+                    self._loadItems();
+                    if (self._getItemsLength() === 0) {
+                        Event.remove(win, SCROLL, loader);
+                        Event.remove(win, RESIZE, resizeHandler);
+                    }
+                    callback && callback();
                 }
             }
         },
@@ -299,7 +311,8 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
                 newSrc;
 
             if (dataSrc && img.src != dataSrc) {
-                if (self.config.supported) {
+                // 启用 webp 并且支持
+                if (self.config.webp_detect && webpSupportMeta.supported) {
                     newSrc = self.config.webp_filter(dataSrc, img);
                 } else {
                   newSrc = dataSrc;
@@ -462,19 +475,30 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
          * 判断浏览器是否支持 webp 格式图片
          * @static
          */
-        isWebpSupported: function() {
+        checkWebpSupport: function(callback) {
             if (webpSupportMeta.detected) {
-                return webpSupportMeta.supported;
+                callback(webpSupportMeta.supported);
             } else {
                 var imgElem,
                     webp_src = "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAAAQAgCdASoEAAQAAAcIhYWIhYSIgIIADA1gAAUAAAEAAAEAAP7%2F2fIAAAAA";
 
                 imgElem = DOM.create('<img>');
                 Event.on(imgElem, 'load', function() {
-                    // the images should have these dimensions
+                    // 图片大小检测
+                    webpSupportMeta.detected = true;
                     if(this.width === 4) {
                         webpSupportMeta.supported = true;
+                    } else {
+                        webpSupportMeta.supported = false;
                     }
+
+                    callback(webpSupportMeta.supported);
+                })
+                Event.on(imgElem, 'error', function() {
+                    webpSupportMeta.detected = true;
+                    webpSupportMeta.supported = false;
+
+                    callback(webpSupportMeta.supported);
                 })
                 DOM.attr(imgElem, "src", webp_src);
             }
@@ -482,7 +506,7 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
     });
 
     // attach static methods
-    S.mix(DataLazyload, DataLazyload.prototype, true, ['loadCustomLazyData', '_loadImgSrc', '_loadAreaData', 'isWebpSupported']);
+    S.mix(DataLazyload, DataLazyload.prototype, true, ['loadCustomLazyData', '_loadImgSrc', '_loadAreaData', 'checkWebpSupport']);
 
     return DataLazyload;
 
