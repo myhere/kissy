@@ -49,18 +49,22 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
             execScript: true,
 
             /**
-             * 是否检测 webp 支持, 支持
+             * 是否检测 webp 支持
+             * 设置为 true, 支持 webp 格式的浏览器对图片 src 会调用 webpFilter 函数
              */
-            webp_detect: false,
+            webpDetect: false,
 
             /**
-             * webp_detect = true 才执行该函数
+             * webpDetect = true 才执行该函数
              * 过滤哪些 url 可以使用 webp 格式
+             *
+             * 默认为 淘宝 cdn 规则:
+             *   taobaocdn.com 域下并且非 .gif 图片加 _.webp
              */
-            webp_filter: function(dataSrc, img) {
+            webpFilter: function(dataSrc, img) {
                 var ret = '';
                 // 淘宝 cdn
-                if (dataSrc.indexOf('taobaocdn.com') !== -1) {
+                if (dataSrc.indexOf('taobaocdn.com') !== -1 && dataSrc.indexOf('.gif') === -1) {
                     ret = dataSrc + '_.webp';
                 } else {
                     ret = dataSrc;
@@ -245,7 +249,7 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
 
             // 加载延迟项
             function loadItems(callback) {
-                if (self.config.webp_detect) {
+                if (self.config.webpDetect) {
                     self.checkWebpSupport(function() {
                         _loadItems();
                     });
@@ -294,7 +298,7 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
                 offset = DOM.offset(img);
 
             if (offset.top <= threshold) {
-                self._loadImgSrc(img);
+                self._loadImgSrc(img, undefined, self.config.webpDetect, self.config.webpFilter);
             } else {
                 return true;
             }
@@ -304,16 +308,15 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
          * 加载图片 src
          * @static
          */
-        _loadImgSrc: function(img, flag) {
+        _loadImgSrc: function(img, flag, webpDetect, webpFilter) {
             flag = flag || IMG_SRC_DATA;
-            var self = this,
-                dataSrc = img.getAttribute(flag),
+            var dataSrc = img.getAttribute(flag),
                 newSrc;
 
             if (dataSrc && img.src != dataSrc) {
                 // 启用 webp 并且支持
-                if (self.config.webp_detect && webpSupportMeta.supported) {
-                    newSrc = self.config.webp_filter(dataSrc, img);
+                if (webpDetect && webpSupportMeta.supported && S.isFunction(webpFilter)) {
+                    newSrc = webpFilter(dataSrc, img);
                 } else {
                   newSrc = dataSrc;
                 }
@@ -480,27 +483,25 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
                 callback(webpSupportMeta.supported);
             } else {
                 var imgElem,
-                    webp_src = "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAAAQAgCdASoEAAQAAAcIhYWIhYSIgIIADA1gAAUAAAEAAAEAAP7%2F2fIAAAAA";
+                    webpSrc = "data:image/webp;base64,UklGRjgAAABXRUJQVlA4ICwAAAAQAgCdASoEAAQAAAcIhYWIhYSIgIIADA1gAAUAAAEAAAEAAP7%2F2fIAAAAA";
 
                 imgElem = DOM.create('<img>');
-                Event.on(imgElem, 'load', function() {
-                    // 图片大小检测
-                    webpSupportMeta.detected = true;
-                    if(this.width === 4) {
-                        webpSupportMeta.supported = true;
-                    } else {
+                Event.on(imgElem, 'load error', function(evt) {
+                    if (evt.type == 'load') {
+                        // 图片大小检测
+                        if (this.width === 4) {
+                            webpSupportMeta.supported = true;
+                        } else {
+                            webpSupportMeta.supported = false;
+                        }
+                    } else if (evt.type == 'error') {
                         webpSupportMeta.supported = false;
                     }
 
-                    callback(webpSupportMeta.supported);
-                })
-                Event.on(imgElem, 'error', function() {
                     webpSupportMeta.detected = true;
-                    webpSupportMeta.supported = false;
-
                     callback(webpSupportMeta.supported);
-                })
-                DOM.attr(imgElem, "src", webp_src);
+                });
+                DOM.attr(imgElem, "src", webpSrc);
             }
         }
     });
@@ -567,6 +568,7 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
 
 /**
  * UPDATE LOG:
+ *   - 2013-03-28 myhere.2009@gmail.com lazyload 添加 webp 支持
  *   - 2010-07-31 yubo IMG_SRC_DATA 由 data-lazyload-src 更名为 data-ks-lazyload + 支持 touch 设备
  *   - 2010-07-10 chengyu 重构，使用正则表达式识别 html 中的脚本，使用 EventTarget 自定义事件机制来处理回调
  *   - 2010-05-10 yubo ie6 下，在 dom ready 后执行，会导致 placeholder 重复加载，为比避免此问题，默认为 none, 去掉占位图
