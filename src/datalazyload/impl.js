@@ -439,7 +439,7 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
          * 加载自定义延迟数据
          * @static
          */
-        loadCustomLazyData: function(containers, type) {
+        loadCustomLazyData: function(containers, type, webpDetect, webpFilter) {
             var self = this, area, imgs;
 
             if (type === 'img-src') type = 'img';
@@ -449,29 +449,40 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
                 containers = [DOM.get(containers)];
             }
 
-            // 遍历处理
-            S.each(containers, function(container) {
-                switch (type) {
-                    case 'img':
-                        if (container.nodeName === 'IMG') { // 本身就是图片
-                            imgs = [container];
-                        } else {
-                            imgs = DOM.query('img', container);
-                        }
 
-                        S.each(imgs, function(img) {
-                            self._loadImgSrc(img, IMG_SRC_DATA + CUSTOM);
-                        });
+            if (webpDetect) {
+                webpFilter = webpFilter || defaultConfig.webpFilter;
+                self.checkWebpSupport(load);
+            } else {
+                load();
+            }
 
-                        break;
+            function load() {
+                // 遍历处理
+                S.each(containers, function(container) {
+                    switch (type) {
+                        case 'img':
+                            if (container.nodeName === 'IMG') { // 本身就是图片
+                                imgs = [container];
+                            } else {
+                                imgs = DOM.query('img', container);
+                            }
 
-                    default:
-                        area = DOM.get('textarea', container);
-                        if (area && DOM.hasClass(area, AREA_DATA_CLS + CUSTOM)) {
-                            self._loadAreaData(container, area);
-                        }
-                }
-            });
+                            S.each(imgs, function(img) {
+                                self._loadImgSrc(img, IMG_SRC_DATA + CUSTOM);
+                            });
+
+                            break;
+
+                        default:
+                            area = DOM.get('textarea', container);
+                            if (area && DOM.hasClass(area, AREA_DATA_CLS + CUSTOM)) {
+                                self._loadAreaData(container, area);
+                            }
+                    }
+                });
+            }
+
         },
 
         /**
