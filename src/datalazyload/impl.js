@@ -59,12 +59,13 @@ KISSY.add('datalazyload/impl', function(S, DOM, Event, undefined) {
              * 过滤哪些 url 可以使用 webp 格式
              *
              * 默认为 淘宝 cdn 规则:
-             *   taobaocdn.com 域下并且非 .gif 图片加 _.webp
+             *   taobaocdn.com 域下并且 .png&.jpg 图片加 _.webp
              */
             webpFilter: function(dataSrc, img) {
                 var ret = '';
                 // 淘宝 cdn
-                if (dataSrc.indexOf('taobaocdn.com') !== -1 && dataSrc.indexOf('.gif') === -1) {
+                if (dataSrc.indexOf('taobaocdn.com') != -1 &&
+                    (dataSrc.indexOf('.jpg') != -1 || dataSrc.indexOf('.png') != -1)) {
                     ret = dataSrc + '_.webp';
                 } else {
                     ret = dataSrc;
