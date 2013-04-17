@@ -33,6 +33,11 @@
      width: 200px;
      height: 200px;
      overflow: hidden;
+     -webkit-user-drag:none;
+     -webkit-user-select:none;
+     -webkit-tap-highlight-color:rgba(0,0,0,0);
+     -webkit-touch-callout:none;
+      -webkit-touch-action:none;
      border: 1px solid red;
      ">
     cause native scroll
@@ -53,6 +58,7 @@
 <script src="../../src/tap-hold.js"></script>
 <script src="../../src/tap.js"></script>
 <script src="../../src/touch.js"></script>
+<script src="../../src/single-touch-start.js"></script>
 <script>
 
     KISSY.use('event,node', function (S, Event) {
@@ -62,27 +68,29 @@
         $('.placeholder').append('<p><a href="http://www.g.cn">google</a></p> ' +
                 new Array(2).join('<p> ' + (new Array(2).join('h')) + '  </p>'));
 
-
-        Event.on('#t', "swipe.test", function (e) {
-            log(e.type + ' : ' + e.direction + ' : ' + e.duration + ' : ' + e.distance);
+        Event.on('#t', "swiping.test", function (e) {
+            //log(e.direction + ' : ' + e.distance);
+            if (e.distance && (e.direction === 'left' || e.direction === 'right')) {
+                e.preventDefault();
+            }
         });
 
-        Event.on('#t2', "swipe.test", {
+        Event.on('#t2,#t', "swipe.test", {
             fn: function (e) {
-                log(e.type + ' : ' + e.direction + ' : ' + e.duration + ' : ' + e.distance);
-            },
-            preventDefaultMove: false
+                log(e.target.id + ' : ' + e.direction + ' : ' + e.duration + ' : ' + e.distance);
+            }
         });
 
-        $('#remove').on('click',function(){
 
-            Event.detach('#t','.test');
-            Event.detach('#t2','.test');
+        Event.on(document, 'touchmove touchstart touchend touchcancel', function (e) {
+            //log('document ' + e.type);
+        });
 
+        $('#remove').on('click', function () {
+
+            Event.detach('#t', '.test');
+            Event.detach('#t2', '.test');
         });
 
     });
-
 </script>
-</body>
-</html>

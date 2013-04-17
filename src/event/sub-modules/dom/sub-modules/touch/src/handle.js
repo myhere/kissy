@@ -29,11 +29,6 @@ KISSY.add('event/dom/touch/handle', function (S, DOM, eventHandleMap, Event, Ges
 
     }
 
-    // 一个应用 一个 document 只需要注册一个 move
-    var throttleTouchMove = S.throttle(function (e) {
-        this.callEventHandle('onTouchMove', e);
-    }, MOVE_DELAY);
-
     DocumentHandler.prototype = {
 
         constructor: DocumentHandler,
@@ -69,7 +64,8 @@ KISSY.add('event/dom/touch/handle', function (S, DOM, eventHandleMap, Event, Ges
         },
 
         onTouchMove: function (e) {
-            throttleTouchMove.call(this, e);
+            // no throttle! to allow preventDefault
+            this.callEventHandle('onTouchMove', e);
         },
 
         onTouchStart: function (event) {
@@ -77,7 +73,7 @@ KISSY.add('event/dom/touch/handle', function (S, DOM, eventHandleMap, Event, Ges
                 self = this,
                 eventHandle = self.eventHandle;
             for (e in eventHandle) {
-                h = eventHandle[e];
+                h = eventHandle[e].handle;
                 h.isActive = 1;
             }
             self.callEventHandle('onTouchStart', event);
@@ -95,7 +91,7 @@ KISSY.add('event/dom/touch/handle', function (S, DOM, eventHandleMap, Event, Ges
             if (event) {
                 for (e in eventHandle) {
                     // event processor shared by multiple events
-                    h = eventHandle[e];
+                    h = eventHandle[e].handle;
                     if (h.processed) {
                         continue;
                     }
@@ -106,7 +102,7 @@ KISSY.add('event/dom/touch/handle', function (S, DOM, eventHandleMap, Event, Ges
                 }
 
                 for (e in eventHandle) {
-                    h = eventHandle[e];
+                    h = eventHandle[e].handle;
                     h.processed = 0;
                 }
             }
@@ -114,14 +110,27 @@ KISSY.add('event/dom/touch/handle', function (S, DOM, eventHandleMap, Event, Ges
 
         addEventHandle: function (event) {
             var self = this,
+                eventHandle = self.eventHandle,
                 handle = eventHandleMap[event].handle;
-            if (!self.eventHandle[event]) {
-                self.eventHandle[event] = handle;
+            if (eventHandle[event]) {
+                eventHandle[event].count++;
+            } else {
+                eventHandle[event] = {
+                    count: 1,
+                    handle: handle
+                };
             }
         },
 
         'removeEventHandle': function (event) {
-            delete this.eventHandle[event];
+            var eventHandle = this.eventHandle;
+            if (eventHandle[event]) {
+                eventHandle[event].count--;
+                if (!eventHandle[event].count) {
+                    delete eventHandle[event];
+                }
+            }
+
         },
 
         destroy: function () {
@@ -174,6 +183,11 @@ KISSY.add('event/dom/touch/handle', function (S, DOM, eventHandleMap, Event, Ges
         './double-tap',
         './pinch',
         './tap-hold',
-        './rotate'
+        './rotate',
+        './single-touch-start'
     ]
 });
+/**
+ * in order to make tap/doubleTap bubbling same with native event.
+ * register event on document and then bubble programmatically!
+ */

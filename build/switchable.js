@@ -1,7 +1,7 @@
 ﻿/*
 Copyright 2013, KISSY UI Library v1.40dev
 MIT Licensed
-build time: Feb 26 11:49
+build time: Apr 17 00:23
 */
 /**
  * accordion aria support
@@ -1139,7 +1139,8 @@ KISSY.add('switchable/base', function (S, DOM, Event, undefined) {
             contentContainer.insertBefore(panelDom, nextPanel);
             // 当trigger 跟panel一一对应时，插入对应的trigger
             if (self.config.steps == 1) {
-                nextTrigger = triggers[index];
+                // 修复ie下不加null的问题
+                nextTrigger = triggers[index] || null;
                 // 插入导航对应的位置
                 navContainer.insertBefore(triggerDom, nextTrigger);
                 // 插入集合
@@ -2353,7 +2354,7 @@ KISSY.add('switchable/effect', function (S, DOM, Event, Anim, Switchable, undefi
                 toPanels = panelInfo.toPanels;
 
             if (fromPanels && fromPanels.length !== 1) {
-                S.error('fade effect only supports steps == 1.');
+
             }
 
             var cfg = self.config,
@@ -2493,7 +2494,7 @@ KISSY.add('switchable/effect', function (S, DOM, Event, Anim, Switchable, undefi
                         ];
 
                         if (!host.viewSize[0]) {
-                            S.error('switchable must specify viewSize if there is no panels');
+
                         }
 
                         if (steps == 1 && panels0) {

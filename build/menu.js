@@ -1,7 +1,7 @@
 ﻿/*
 Copyright 2013, KISSY UI Library v1.40dev
 MIT Licensed
-build time: Mar 13 22:29
+build time: Apr 17 00:22
 */
 /**
  * @ignore
@@ -922,7 +922,6 @@ KISSY.add("menu/popupmenu", function (S, extension, Menu, PopupMenuRender) {
      * @mixins KISSY.Component.Extension.Align
      */
     var PopupMenu = Menu.extend([
-        extension.ContentBox,
         extension.Position,
         extension.Align
     ],
@@ -1234,7 +1233,7 @@ KISSY.add("menu/submenu", function (S, Event, Component, MenuItem, SubMenuRender
             decorateChildrenInternal: function (UI, el) {
                 // 不能用 display:none , menu 的隐藏是靠 visibility
                 // eg: menu.show(); menu.hide();
-                el.css("visibility", "hidden").prependTo(el[0].ownerDocument.body);
+                el.css("top", "-9999").prependTo(el[0].ownerDocument.body);
                 var self = this;
                 self.setInternal("menu",
                     Component.DecorateChild.prototype.decorateChildrenInternal.call(self, UI, el, self.get('menu')));

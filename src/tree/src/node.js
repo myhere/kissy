@@ -24,7 +24,6 @@ KISSY.add("tree/node", function (S, Node, Component, TreeNodeRender) {
          */
         {
 
-
             _onSetSelected: function (v, e) {
                 var tree = this.get("tree");
                 if (e && e.byPassSetTreeSelectedItem) {
@@ -33,9 +32,18 @@ KISSY.add("tree/node", function (S, Node, Component, TreeNodeRender) {
                 }
             },
 
+            bindUI: function () {
+                this.on('afterAddChild', onAddChild);
+                this.on('afterRemoveChild', onRemoveChild);
+                this.on('afterAddChild afterRemoveChild', syncAriaSetSize);
+            },
+
             syncUI: function () {
                 // 集中设置样式
                 refreshCss(this);
+                syncAriaSetSize.call(this, {
+                    target: this
+                });
             },
 
             _keyNav: function (e) {
@@ -152,44 +160,27 @@ KISSY.add("tree/node", function (S, Node, Component, TreeNodeRender) {
                     target = $(e.target),
                     expanded = self.get("expanded"),
                     tree = self.get("tree");
-                tree.get("el")[0].focus();
+                tree.focus();
                 if (target.equals(self.get("expandIconEl"))) {
                     self.set("expanded", !expanded);
                 } else {
                     self.select();
                     self.fire("click");
                 }
+
+
             },
 
             /**
-             * override controller 's addChild to apply depth and css recursively
+             * override root 's renderChildren to apply depth and css recursively
              */
-            addChild: function () {
-                var self = this,
-                    c;
-                c = TreeNode.superclass.addChild.apply(self, S.makeArray(arguments));
-                // after default addChild then parent is accessible
-                // if first build a node subtree, no root is constructed yet!
-                var tree = self.get("tree");
-                if (tree) {
-                    recursiveRegister(tree, c, "_register", self.get("depth") + 1);
-                    refreshCssForSelfAndChildren(self);
+            renderChildren: function () {
+                var self = this;
+                TreeNode.superclass.renderChildren.apply(self, arguments);
+                // only sync child sub tree at root node
+                if (self === self.get('tree')) {
+                    registerToTree(self, self, -1, 0);
                 }
-                return c;
-            },
-
-            /**
-             * override controller 's removeChild to apply depth and css recursively
-             */
-            removeChild: function (c) {
-                var self = this,
-                    tree = self.get("tree");
-                if (tree) {
-                    recursiveRegister(tree, c, "_unRegister");
-                    TreeNode.superclass.removeChild.apply(self, S.makeArray(arguments));
-                    refreshCssForSelfAndChildren(self);
-                }
-                return c;
             },
 
             _onSetExpanded: function (v) {
@@ -353,21 +344,23 @@ KISSY.add("tree/node", function (S, Node, Component, TreeNodeRender) {
 
     // # ------------------- private start
 
-    function recursiveRegister(tree, c, action, setDepth) {
-        tree[action](c);
-        if (setDepth !== undefined) {
-            c.set("depth", setDepth);
+    function onAddChild(e) {
+        if (e.target == this) {
+            registerToTree(this, e.component, this.get('depth'), e.index);
         }
-        S.each(c.get("children"), function (child) {
-            // xclass 的情况，在对应 xclass render 时自然会处理
-            if (child.isController) {
-                if (setDepth) {
-                    recursiveRegister(tree, child, action, setDepth + 1);
-                } else {
-                    recursiveRegister(tree, child, action);
-                }
-            }
-        });
+    }
+
+    function onRemoveChild(e) {
+        var self = this;
+        if (e.target == self) {
+            recursiveRegister(self.get('tree'), e.component, "_unRegister");
+            refreshCssForSelfAndChildren(self, e.index);
+        }
+    }
+
+    function syncAriaSetSize(e) {
+        if (e.target === this)
+            this.get('el')[0].setAttribute('aria-setsize', this.get('children').length);
     }
 
     function isNodeSingleOrLast(self) {
@@ -437,20 +430,39 @@ KISSY.add("tree/node", function (S, Node, Component, TreeNodeRender) {
         }
     }
 
-    function refreshCssForSelfAndChildren(self) {
-        var children = self.get('children'),
-            len = self.get('children').length;
-        refreshCss(self);
-        S.each(children, function (c, index) {
-            // 一个 c 初始化成功了
-            // 可能其他 c 仍是 { xclass }
-            if (c.get) {
-                refreshCss(c);
-                var el = c.get("el");
-                el.attr("aria-posinset", index + 1);
-                el.attr("aria-setsize", len);
+    function registerToTree(self, c, depth, index) {
+        var tree = self.get("tree");
+        if (tree) {
+            recursiveRegister(tree, c, "_register", depth + 1);
+            refreshCssForSelfAndChildren(self, index);
+        }
+    }
+
+    function recursiveRegister(tree, c, action, setDepth) {
+        tree[action](c);
+        if (setDepth !== undefined) {
+            c.set("depth", setDepth);
+        }
+        S.each(c.get("children"), function (child) {
+            if (typeof setDepth == 'number') {
+                recursiveRegister(tree, child, action, setDepth + 1);
+            } else {
+                recursiveRegister(tree, child, action);
             }
         });
+    }
+
+    function refreshCssForSelfAndChildren(self, index) {
+        refreshCss(self);
+        index = Math.max(0, index - 1);
+        var children = self.get('children'),
+            c,
+            len = children.length;
+        for (; index < len; index++) {
+            c = children[index];
+            refreshCss(c);
+            c.get("el")[0].setAttribute("aria-posinset", index + 1);
+        }
     }
 
     // # ------------------- private end

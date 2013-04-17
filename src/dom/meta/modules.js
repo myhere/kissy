@@ -1,5 +1,10 @@
 config({
     "dom": {
-        "alias": ['dom/base', UA.ie < 9 ? 'dom/ie' : '', Features.isClassListSupported() ? '' : 'dom/class-list']
+        "alias": [
+            'dom/base',
+            Features.isIELessThan(9) ? 'dom/ie' : '',
+            !Features.isQuerySelectorSupported() ? 'dom/selector' : '',
+            Features.isClassListSupported() ? '' : 'dom/class-list'
+        ]
     }
 });

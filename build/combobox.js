@@ -1,7 +1,7 @@
 ﻿/*
 Copyright 2013, KISSY UI Library v1.40dev
 MIT Licensed
-build time: Mar 13 21:17
+build time: Apr 17 00:14
 */
 /**
  * @ignore
@@ -162,7 +162,7 @@ KISSY.add("combobox/base", function (S, Node, Component, ComboBoxRender, Menu, u
                     input = self.get("input");
                     if (self.get('collapsed')) {
                         // fetch data
-                        input[0].focus();
+                        self.focus();
                         self.sendRequest('');
                     } else {
                         // switch from open to collapse
@@ -179,10 +179,6 @@ KISSY.add("combobox/base", function (S, Node, Component, ComboBoxRender, Menu, u
                     highlightedItem,
                     handledByMenu,
                     menu = getMenu(self);
-
-                if (!menu) {
-                    return undefined;
-                }
 
                 input = self.get("input");
                 updateInputOnDownUp = self.get("updateInputOnDownUp");
@@ -201,7 +197,7 @@ KISSY.add("combobox/base", function (S, Node, Component, ComboBoxRender, Menu, u
                     }
                 }
 
-                if (menu.get("visible")) {
+                if (menu && menu.get("visible")) {
                     handledByMenu = menu['handleKeydown'](e);
 
                     // esc
@@ -245,14 +241,12 @@ KISSY.add("combobox/base", function (S, Node, Component, ComboBoxRender, Menu, u
 
             syncUI: function () {
                 var self = this,
-                    input ,
-                    inputValue;
-                if (self.get("placeholder")) {
-                    input = self.get("input");
+                    input = self.get("input"),
                     inputValue = self.get("inputValue");
-                    if (inputValue != undefined) {
-                        input.val(inputValue);
-                    }
+                if (inputValue != undefined) {
+                    input.val(inputValue);
+                }
+                if (self.get("placeholder")) {
                     if (!input.val()) {
                         self.get("placeholderEl").show();
                     }
@@ -548,7 +542,7 @@ KISSY.add("combobox/base", function (S, Node, Component, ComboBoxRender, Menu, u
     function onMenuMouseOver() {
         var self = this;
         // trigger el focus
-        self.get("input")[0].focus();
+        self.focus();
         // prevent menu from hiding
         clearDismissTimer.call(self);
     }
@@ -831,7 +825,6 @@ KISSY.add('combobox/cursor', function (S, DOM) {
         supportInputScrollLeft = !!(input.scrollLeft > 0);
         DOM.remove(input);
         findSupportInputScrollLeft = S.noop;
-        alert(supportInputScrollLeft);
     };
 
     // firefox not support, chrome support

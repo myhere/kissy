@@ -14,6 +14,8 @@ tests.push('/kissy/src/component/tests/runner/test.html');
 
 tests.push('/kissy/src/cookie/tests/runner/test.html');
 
+tests.push('/kissy/src/datalazyload/tests/runner/test-webp.html');
+
 tests.push('/kissy/src/datalazyload/tests/runner/test-window.html');
 
 tests.push('/kissy/src/dd/sub-modules/base/tests/runner/test.html');
@@ -25,6 +27,10 @@ tests.push('/kissy/src/dd/sub-modules/plugin/sub-modules/constrain/tests/runner/
 tests.push('/kissy/src/dd/sub-modules/plugin/sub-modules/proxy/tests/runner/test.html');
 
 tests.push('/kissy/src/dd/sub-modules/plugin/sub-modules/scroll/tests/runner/test.html');
+
+tests.push('/kissy/src/dom/sub-modules/selector/tests/runner/selector.html');
+
+tests.push('/kissy/src/dom/sub-modules/selector/tests/runner/test.html');
 
 tests.push('/kissy/src/dom/tests/runner/test.html');
 
@@ -93,8 +99,6 @@ tests.push('/kissy/src/seed/tests/runner/simple-loader-core.html');
 tests.push('/kissy/src/seed/tests/runner/simple-loader-native.html');
 
 tests.push('/kissy/src/seed/tests/runner/simple-loader.html');
-
-tests.push('/kissy/src/sizzle/tests/runner/test.html');
 
 tests.push('/kissy/src/stylesheet/tests/runner/test.html');
 

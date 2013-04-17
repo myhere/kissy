@@ -1,7 +1,7 @@
 ﻿/*
 Copyright 2013, KISSY UI Library v1.40dev
 MIT Licensed
-build time: Mar 25 15:07
+build time: Apr 17 00:22
 */
 /**
  * scrollview controller
@@ -21,7 +21,7 @@ KISSY.add('scrollview/base', function (S, DOM, Component, Extension, Render, Eve
         return Math.min(Math.max(v, min), max);
     }
 
-    return Component.Controller.extend([Extension.ContentBox], {
+    return Component.Controller.extend({
 
         bindUI: function () {
             var self = this,
@@ -162,9 +162,9 @@ KISSY.add('scrollview/base', function (S, DOM, Component, Extension, Render, Eve
             var self = this,
                 domEl = this.get('el')[0],
                 domContentEl = this.get('contentEl')[0],
-                scrollHeight = Math.max(domEl.scrollHeight, domContentEl.offsetHeight),
-            // contentEl[0].scrollWidth is same with el.innerWidth()!
-                scrollWidth = Math.max(domEl.scrollWidth, domContentEl.offsetWidth) ,
+            // wierd ...
+                scrollHeight = Math.max(domEl.scrollHeight, domContentEl.scrollHeight),
+                scrollWidth = Math.max(domEl.scrollWidth, domContentEl.scrollWidth) ,
                 clientHeight = domEl.clientHeight,
                 _allowScroll,
                 clientWidth = domEl.clientWidth;
@@ -258,7 +258,7 @@ KISSY.add('scrollview/base', function (S, DOM, Component, Extension, Render, Eve
     });
 
 }, {
-    requires: ['dom','component/base', 'component/extension', './base/render', 'event']
+    requires: ['dom', 'component/base', 'component/extension', './base/render', 'event']
 });/**
  * scrollview render
  * @author yiminghe@gmail.com
@@ -266,8 +266,8 @@ KISSY.add('scrollview/base', function (S, DOM, Component, Extension, Render, Eve
 KISSY.add('scrollview/base/render', function (S, Component, Extension) {
 
     // http://www.html5rocks.com/en/tutorials/speed/html5/
-    var supportCss3 = S.Features.isTransitionSupported();
-    var css3Prefix = S.Features.getCss3Prefix();
+    var supportCss3 = S.Features.isTransformSupported();
+    var css3Prefix = S.Features.getTransformPrefix();
 
     var methods = {
 

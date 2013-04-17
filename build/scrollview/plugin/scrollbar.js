@@ -1,7 +1,7 @@
 ﻿/*
 Copyright 2013, KISSY UI Library v1.40dev
 MIT Licensed
-build time: Mar 25 15:07
+build time: Apr 17 00:23
 */
 /**
  * scrollbar for KISSY scrollview
@@ -200,7 +200,7 @@ KISSY.add('scrollview/plugin/scrollbar/control', function (S, Event, DD, Compone
                 self._startHideTimer();
             }
         },
-
+        // percentage matters!
         afterScrollChange: function (e) {
             // only show when scroll
             var self = this,
@@ -326,9 +326,6 @@ KISSY.add('scrollview/plugin/scrollbar/control', function (S, Event, DD, Compone
             focusable: {
                 value: false
             },
-            visibleMode: {
-                value: 'visibility'
-            },
             xrender: {
                 value: ScrollBarRender
             }
@@ -380,8 +377,8 @@ KISSY.add('scrollview/plugin/scrollbar/render', function (S, Component) {
     }
 
     // http://www.html5rocks.com/en/tutorials/speed/html5/
-    var supportCss3 = S.Features.isTransitionSupported();
-    var css3Prefix = S.Features.getCss3Prefix();
+    var supportCss3 = S.Features.isTransformSupported();
+    var css3Prefix = S.Features.getTransformPrefix();
 
     var methods = {
 

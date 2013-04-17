@@ -14,9 +14,10 @@ Legend of version history:
 History:
 ---------------------------
 
-### v1.3.0 -> Infinity
+### v1.3.0 -> v1.4.0
 
- - [!] 到对应模块文件夹查看
+ - [*] kissy-tools 对应工具合并到 tools 目录
+ - [!] 模块更新到对应模块文件夹查看
 
 ### Happy 3nd Anniversary (2012/10/26)
  - [!] Still Alive
@@ -47,6 +48,7 @@ History:
 
     data-config parse 为 json 传入 config
 
+ - [!] KISSY.mix 深度 mix 时白名单参数递归作用于子对象
  - [x] KISSY.add(fn) fn 中 this 为模块对象
  - [!] KISSY.add(name,fn); fn 不会立即执行，只有 name 被 use 或 require 时才会执行
  - [*] Support tag for individual module : #110
@@ -77,6 +79,7 @@ History:
  - [*] valuechange 透明支持 webkitspeechchange 事件
  - [*] publish 支持空格分隔的多个事件名字符串
  - [+] support touch (swipe/tap/tapHold/pinch/rotate/shake)
+ - [!] focus/blur 不可用于 delegate，请使用 focusin/focusout
 
 #### ajax
  - [+] io 调用返回 Promise 类型，可以进行链式操作

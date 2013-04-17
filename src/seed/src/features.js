@@ -9,6 +9,7 @@
         win = Env.host,
         UA = S.UA,
         VENDORS = [
+            '',
             'Webkit',
             'Moz',
             'O',
@@ -17,28 +18,40 @@
     // nodejs
         doc = win.document || {},
         documentMode = doc.documentMode,
-        isTransitionSupported = false,
+        isTransitionSupportedState = false,
         transitionPrefix = '',
+        isTransformSupportedState = false,
+        transformPrefix = '',
         documentElement = doc.documentElement,
         documentElementStyle,
-        isClassListSupported = true,
+        isClassListSupportedState = true,
+        isQuerySelectorSupportedState = false,
     // phantomjs issue: http://code.google.com/p/phantomjs/issues/detail?id=375
-        isTouchSupported = ('ontouchstart' in doc) && !(UA.phantomjs),
+        isTouchSupportedState = ('ontouchstart' in doc) && !(UA.phantomjs),
         ie = documentMode || UA.ie;
 
     if (documentElement) {
-        documentElementStyle = documentElement.style;
-        if ('transition' in documentElementStyle) {
-            isTransitionSupported = true;
-        } else {
-            S.each(VENDORS, function (val) {
-                if ((val + 'Transition') in documentElementStyle) {
-                    transitionPrefix = val;
-                    isTransitionSupported = true;
-                }
-            });
+        if (documentElement.querySelector &&
+            // broken ie8
+            ie != 8) {
+            isQuerySelectorSupportedState = true;
         }
-        isClassListSupported = 'classList' in documentElement;
+        documentElementStyle = documentElement.style;
+
+        S.each(VENDORS, function (val) {
+            var transition = val ? val + 'Transition' : 'transition',
+                transform = val ? val + 'Transform' : 'transform';
+            if (transition in documentElementStyle) {
+                transitionPrefix = val;
+                isTransitionSupportedState = true;
+            }
+            if (transform in documentElementStyle) {
+                transformPrefix = val;
+                isTransformSupportedState = true;
+            }
+        });
+
+        isClassListSupportedState = 'classList' in documentElement;
     }
 
     /**
@@ -61,7 +74,7 @@
          * @return {Boolean}
          */
         isTouchSupported: function () {
-            return isTouchSupported;
+            return isTouchSupportedState;
         },
 
         isDeviceMotionSupported: function () {
@@ -76,15 +89,30 @@
         },
 
         'isTransitionSupported': function () {
-            return isTransitionSupported;
+            return isTransitionSupportedState;
+        },
+
+        'isTransformSupported': function () {
+            return isTransformSupportedState;
         },
 
         'isClassListSupported': function () {
-            return isClassListSupported
+            return isClassListSupportedState
         },
 
-        'getCss3Prefix': function () {
+        'isQuerySelectorSupported': function () {
+            return isQuerySelectorSupportedState;
+        },
+
+        'isIELessThan': function (v) {
+            return ie && ie < v;
+        },
+
+        'getTransitionPrefix': function () {
             return transitionPrefix;
+        },
+        'getTransformPrefix': function () {
+            return transformPrefix;
         }
     };
 })(KISSY);

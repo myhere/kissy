@@ -1,5 +1,5 @@
 (function () {
-    KISSY.use(window.EDITOR_MOD || "editor", function (S, Editor) {
+    KISSY.use("editor", function (S, Editor) {
 
         var cfg = S.mix({
             // 是否初始聚焦
@@ -12,7 +12,7 @@
             // customLink:["http://localhost/customLink.css","http://xx.com/y2.css"],
             // render:"#container",
             srcNode: '#container',
-            width: '100%',
+            width: '900px',
             height: "400px"
         }, window.EDITOR_CFG);
 
@@ -58,7 +58,7 @@
         var fullPlugins = [];
 
         S.each(plugins, function (p, i) {
-            fullPlugins[i] = "editor/plugin/" + p + "/";
+            fullPlugins[i] = "editor/plugin/" + p;
         });
 
         var pluginConfig = {
@@ -78,7 +78,7 @@
                     suffix: "png,jpg,jpeg,gif",
                     fileInput: "Filedata",
                     sizeLimit: 1000, //k
-                    extraHtml: "<p style='margin-top:10px;'><input type='checkbox' id='ke_img_up_watermark_1' checked='checked'> 图片加水印，防止别人盗用</p>"
+                    extraHTML: "<p style='margin-top:10px;'><input type='checkbox' id='ke_img_up_watermark_1' checked='checked'> 图片加水印，防止别人盗用</p>"
                 }
             },
             "flash": {
@@ -143,7 +143,7 @@
                 }
             },
             "multiple-upload": {
-                serverUrl: "http://localhost/src/editor/demo/upload.jss",
+                serverUrl: "http://localhost/kissy_git/kissy/src/editor/demo/upload.php",
                 serverParams: {
                     waterMark: function () {
                         return S.one("#ke_img_up_watermark_2")[0].checked;
@@ -152,7 +152,7 @@
                 //previewSuffix:"_60x60",
                 "previewWidth": "80px",
                 sizeLimit: 1000, //k,, numberLimit:15,
-                extraHtml: "<p style='margin-top:10px;'>" +
+                extraHTML: "<p style='margin-top:10px;'>" +
                     "<input type='checkbox' " +
                     "style='vertical-align:middle;margin:0 5px;' " +
                     "id='ke_img_up_watermark_2'>" +
@@ -162,7 +162,7 @@
                 urlCfg: [
                     {
                         reg: /tudou\.com/i,
-                        url: "http://bangpai.daily.taobao.net/json/getTudouVideo.htm",
+                        url: "http://bangpai.taobao.com/json/getTudouVideo.htm",
                         paramName: "url"
                     }
                 ],
@@ -230,7 +230,7 @@
                 // saveKey:"xxx",
                 interval: 5,
                 limit: 10,
-                "helpHtml": "<div " +
+                "helpHTML": "<div " +
                     "style='width:200px;'>" +
                     "<div style='padding:5px;'>草稿箱能够自动保存您最新编辑的内容，" +
                     "如果发现内容丢失，" +

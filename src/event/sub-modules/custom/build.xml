@@ -3,8 +3,5 @@
 
     <property name="component.name" value="event/custom"/>
 
-    <import file="../../../../tools/build-xml/common.xml"/>
-
-    <target name="build" depends="common-build.build">
-    </target>
+    <import file="../../../common.xml"/>
 </project>

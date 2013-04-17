@@ -7,7 +7,7 @@ KISSY.add('component/base/box-render', function (S) {
 
     var $ = S.all,
         UA = S.UA,
-        elTpl='<div class="{cls}"></div>',
+        elTpl = '<div class="{cls}"></div>',
         doc = S.Env.host.document;
 
     function BoxRender() {
@@ -36,9 +36,6 @@ KISSY.add('component/base/box-render', function (S) {
 
         visible: {},
 
-        visibleMode: {},
-        // content 设置的内容节点,默认根节点
-        // 防止 content 节点和根节点不是同一个节点，例如 submenu
         contentEl: {
             valueFn: function () {
                 return this.get('el');
@@ -70,8 +67,8 @@ KISSY.add('component/base/box-render', function (S) {
                 contentEl;
             if (!(el = self.get('srcNode'))) {
                 contentEl = self.get('contentEl');
-                el = $(S.substitute(elTpl,{
-                    cls:cls
+                el = $(S.substitute(elTpl, {
+                    cls: cls
                 }));
                 if (contentEl) {
                     el.append(contentEl);
@@ -153,21 +150,13 @@ KISSY.add('component/base/box-render', function (S) {
             var self = this,
                 el = self.get('el'),
                 shownCls = self.getCssClassWithState('shown'),
-                hiddenCls = self.getCssClassWithState('hidden'),
-                visibleMode = self.get('visibleMode');
+                hiddenCls = self.getCssClassWithState('hidden');
             if (visible) {
                 el.removeClass(hiddenCls);
                 el.addClass(shownCls);
             } else {
                 el.removeClass(shownCls);
                 el.addClass(hiddenCls);
-            }
-            //return;
-            // !TODO 兼容代码，去除，通过 css 控制隐藏属性
-            if (visibleMode == 'visibility') {
-                el.css('visibility', visible ? 'visible' : 'hidden');
-            } else {
-                el.css('display', visible ? '' : 'none');
             }
         },
 

@@ -8,6 +8,34 @@ KISSY.use('xtemplate', function (S, XTemplate) {
 
         describe('feature', function () {
 
+            it('support {{%%}}', function () {
+
+                var tpl = '{{%{{my}}%}}';
+
+                var render = new XTemplate(tpl).render({
+                    my: 1
+                });
+
+                expect(render).toBe('{{my}}');
+
+            });
+
+            it('not allow empty content', function () {
+                var tpl = '';
+
+                var data = {
+                    title: 'o'
+                };
+
+                try {
+                    new XTemplate(tpl, {
+                        name: 'tpl-empty-content'
+                    }).render(data);
+                } catch (e) {
+                    expect(e.message.indexOf('Syntax error') != -1).toBeTruthy();
+                }
+            });
+
             it('support {{variable}}', function () {
 
                 var tpl = 'this is class="t" {{title}}!';
@@ -25,6 +53,7 @@ KISSY.use('xtemplate', function (S, XTemplate) {
             });
 
             describe("property", function () {
+
 
                 it('support sub property', function () {
 
@@ -57,6 +86,21 @@ KISSY.use('xtemplate', function (S, XTemplate) {
 
                 });
 
+            });
+
+            it('support variable as index', function () {
+                var tpl = "{{data[d]}}";
+
+                var data = {
+                    data: {
+                        my: 1
+                    },
+                    d: 'my'
+                };
+
+                var render = new XTemplate(tpl).render(data);
+
+                expect(render).toBe('1');
             });
 
 
@@ -100,7 +144,91 @@ KISSY.use('xtemplate', function (S, XTemplate) {
                     'not has title2');
             });
 
+            it('support negative for if args', function () {
+                var tpl = '{{#if n===-1}}-1{{else}}1{{/if}}';
+
+                var data = {
+                    n: -1
+                };
+
+                var render = new XTemplate(tpl).render(data);
+
+                expect(render).toBe('-1');
+
+                tpl = '{{#if n===--1}}-1{{else}}1{{/if}}';
+
+                data = {
+                    n: 1
+                };
+
+                try {
+                    new XTemplate(tpl).render(data);
+                } catch (e) {
+                    expect(e.message.indexOf('Syntax error') > -1).toBeTruthy();
+                }
+
+
+                tpl = '{{#if n===0--1}}1{{else}}-1{{/if}}';
+
+                data = {
+                    n: 1
+                };
+
+                try {
+                    new XTemplate(tpl).render(data);
+                } catch (e) {
+                    expect(e.message.indexOf('Syntax error') > -1).toBeTruthy();
+                }
+            });
+
             describe('each', function () {
+
+                it('allow empty content', function () {
+                    var tpl = '{{#each l}}{{/each}}';
+
+                    var data = {
+                        x: [
+                            {
+                                title: 5
+                            }
+                        ]
+                    };
+
+                    var render = new XTemplate(tpl).render(data);
+
+                    expect(render).toBe('');
+
+
+                    tpl = '{{#each x}}{{/each}}';
+
+                    data = {
+                        x: [
+                            {
+                                title: 5
+                            }
+                        ]
+                    };
+
+                    render = new XTemplate(tpl).render(data);
+
+                    expect(render).toBe('');
+                });
+
+                it('support variable as index', function () {
+
+                    var tpl = "{{#each data[d]}}{{.}}{{/each}}";
+
+                    var data = {
+                        data: {
+                            my: [1, 2]
+                        },
+                        d: 'my'
+                    };
+
+                    var render = new XTemplate(tpl).render(data);
+
+                    expect(render).toBe('12');
+                });
 
                 it('ignore if not found', function () {
                     var tpl = '{{#each l}}{{title}}{{/each}}';
@@ -700,6 +828,22 @@ KISSY.use('xtemplate', function (S, XTemplate) {
                 });
 
 
+                it('support variable as index', function () {
+                    // 不推荐！
+                    var tpl = "{{#data[d]}}{{.}}{{/data[d]}}";
+
+                    var data = {
+                        data: {
+                            my: [1, 2]
+                        },
+                        d: 'my'
+                    };
+
+                    var render = new XTemplate(tpl).render(data);
+
+                    expect(render).toBe('12');
+                });
+
                 it('support {{.}}', function () {
 
                     var tpl = '{{.}}';
@@ -873,7 +1017,7 @@ KISSY.use('xtemplate', function (S, XTemplate) {
 
                 }
                 if (S.config('debug')) {
-                    expect(S.startsWith(info, 'parse error at line 3:\n' +
+                    expect(S.startsWith(info, 'Syntax error at line 3:\n' +
                         '{{#if title}} shoot\n\n' +
                         '--------------------^\n' +
                         'expect'));
@@ -951,7 +1095,7 @@ KISSY.use('xtemplate', function (S, XTemplate) {
                         //S.log('!'+e.replace(/\n/g,'\\n').replace(/\r/g,'\\r')+'!');
                         throw e;
                     }
-                }).toThrow('parse error at line 3:\n' +
+                }).toThrow('Syntax error at line 3:\n' +
                         'expect {{/if}} not {{/with}}');
 
             });

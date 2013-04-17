@@ -2,7 +2,7 @@
  * tree management utils
  * @author yiminghe@gmail.com
  */
-KISSY.add("tree/tree-manager", function (S, Event) {
+KISSY.add("tree/tree-manager", function (S, Event, Component) {
 
     function TreeManager() {
     }
@@ -40,8 +40,8 @@ KISSY.add("tree/tree-manager", function (S, Event) {
     };
 
     function getIdFromNode(c) {
-        var el = c.get("el"),
-            id = el.attr("id");
+        var el = c.get("el");
+        var id = el.attr("id");
         if (!id) {
             el.attr("id", id = S.guid("tree-node"));
         }
@@ -56,7 +56,7 @@ KISSY.add("tree/tree-manager", function (S, Event) {
             if (!c.__isRegisted) {
                 getAllNodes(this)[getIdFromNode(c)] = c;
                 c.__isRegisted = 1;
-                S.log("_register for " + c.get("content"));
+                //S.log("_register for " + c.get("content"));
             }
         },
 
@@ -64,7 +64,7 @@ KISSY.add("tree/tree-manager", function (S, Event) {
             if (c.__isRegisted) {
                 delete getAllNodes(this)[getIdFromNode(c)];
                 c.__isRegisted = 0;
-                S.log("_unRegister for " + c.get("content"));
+                //S.log("_unRegister for " + c.get("content"));
             }
         },
 
@@ -114,6 +114,7 @@ KISSY.add("tree/tree-manager", function (S, Event) {
 
         _onSetFocused: function (v) {
             var self = this;
+            Component.Controller.prototype._onSetFocused.apply(self, arguments);
             // 得到焦点时没有选择节点
             // 默认选择自己
             if (v && !self.get("selectedItem")) {
@@ -134,5 +135,5 @@ KISSY.add("tree/tree-manager", function (S, Event) {
 
     return TreeManager;
 }, {
-    requires: ['event']
+    requires: ['event', 'component/base']
 });

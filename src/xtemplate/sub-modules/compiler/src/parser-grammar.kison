@@ -57,7 +57,7 @@
                 rhs: ['OPEN_BLOCK', 'inTpl', 'CLOSE'],
                 action: function () {
                     if (this.$1.charAt(this.$1.length - 1) == '^') {
-                        this.$2.isInversed = 1;
+                        this.$2['isInverted'] = 1;
                     }
                     return this.$2;
                 }
@@ -80,7 +80,7 @@
                 symbol: 'tpl',
                 rhs: ['OPEN_UN_ESCAPED', 'inTpl', 'CLOSE'],
                 action: function () {
-                    this.$2.escaped = false;
+                    this.$2['escaped'] = false;
                     return this.$2;
                 }
             },
@@ -314,6 +314,14 @@
 
             {
                 symbol: 'PrimaryExpression',
+                rhs: ['MINUS', 'NUMBER'],
+                action: function () {
+                    return new this.yy.NumberNode(this.lexer.lineNumber, 0 - this.$2);
+                }
+            },
+
+            {
+                symbol: 'PrimaryExpression',
                 rhs: ['BOOLEAN'],
                 action: function () {
                     return new this.yy.BooleanNode(this.lexer.lineNumber, this.$1);
@@ -332,7 +340,6 @@
                     return this.$2;
                 }
             },
-
 
         /**
          * expression end
@@ -381,6 +388,13 @@
             },
             {
                 symbol: 'pathSegments',
+                rhs: ['pathSegments', 'REF_START', 'Expression','REF_END'],
+                action: function () {
+                    this.$1.push(this.$3);
+                }
+            },
+            {
+                symbol: 'pathSegments',
                 rhs: ['pathSegments', 'SEP', 'NUMBER'],
                 action: function () {
                     this.$1.push(this.$3);
@@ -415,11 +429,10 @@
                         } else {
                             self.pushState('t');
                         }
-                        // only return when has content
-                        if (self.text = text) {
-                            return 'CONTENT';
-                        }
-                        return undefined;
+                        // https://github.com/kissyteam/kissy/issues/330
+                        // return even empty
+                        self.text = text;
+                        return 'CONTENT';
                     }
                 },
                 {
@@ -466,6 +479,18 @@
                     // ignore comment
                     // ,token: 'COMMENT'
                 },
+                // plain mode
+                {
+                    state: ['t'],
+                    regexp: /^{{%([\s\S]*?)%}}/,
+                    action: function () {
+                        // return to content mode
+                        this.text = this.matches[1] || '';
+                        this.popState();
+                    },
+                    token: 'CONTENT'
+                },
+
                 {
                     state: ['t'],
                     regexp: /^{{/,
@@ -625,17 +650,27 @@
                     }
                 },
                 {
-                    state: ['t'],
-                    regexp: /^\./,
-                    token: 'SEP'
-                },
-                {
                     state: ['ws'],
                     regexp: /^\//,
                     token: 'SEP',
                     action: function () {
                         this.popState();
                     }
+                },
+                {
+                    state: ['t'],
+                    regexp: /^\./,
+                    token: 'SEP'
+                },
+                {
+                    state: ['t'],
+                    regexp: /^\[/,
+                    token: 'REF_START'
+                },
+                {
+                    state: ['t'],
+                    regexp: /^\]/,
+                    token: 'REF_END'
                 },
                 {
                     state: ['t'],
